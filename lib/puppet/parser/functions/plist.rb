@@ -2,6 +2,7 @@
 
 require 'puppet/util/plist' if Puppet.features.cfpropertylist?
 
+# Accepts a hash as input and returns a plist
 module Puppet::Parser::Functions
   newfunction(:plist, type: :rvalue) do |args|
     hash   = args[0]      || {}
