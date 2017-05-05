@@ -18,3 +18,11 @@ file {'/tmp/a.plist':
     content => plist($plist, binary),
 }
 ```
+
+## `macos_package_installed`
+
+``` puppet
+macos_package_installed('com.googlecode.munki.core', '1.0.0')
+```
+
+Returns true if the version specified, or a higher version is installed of the specified package ID.
