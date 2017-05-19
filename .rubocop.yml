@@ -1,2 +1,5 @@
 Style/ClassAndModuleChildren:
   EnforcedStyle: compact
+
+Metrics/BlockLength:
+  Max: 30

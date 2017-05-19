@@ -31,40 +31,40 @@ Facter.add('installed_packages') do
   confine osfamily: 'Windows'
 
   setcode do
+    require 'json'
 
-  require 'json'
+    powershell = 'C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe'
+    # rubocop:disable LineLength
+    command = 'gp HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json'
 
-	powershell = 'C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe'
-	command = 'gp HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json'
+    if File.exist?(powershell)
 
- 	if File.exists?(powershell)
+      raw = Facter::Util::Resolution.exec(%(#{powershell} -command "#{command}"))
 
-	raw = Facter::Util::Resolution.exec(%Q{#{powershell} -command "#{command}"})
+      # rubocop:enable LineLength
+      installed_packages = {}
 
-	installed_packages = {}
+      items = JSON.parse(raw)
 
-	items = JSON.parse(raw)
+      items[1..-1].each do |item|
+        # rubocop:disable LineLength
+        volume = if item['InstallLocation'].nil? || item['InstallLocation'] == ''
+                   # rubocop:enable LineLength
+                   ''
+                 else
+                   item['InstallLocation'][0..2]
+                 end
 
-	for item in items[1..-1]
+        item['DisplayName'] == '' if item['DisplayName'].nil?
 
-		if item['InstallLocation'].nil? || item['InstallLocation'] == ""
-			volume = ""
-		else
-			volume = item['InstallLocation'][0..2]
-		end
-
-		if item['DisplayName'].nil?
-			item['DisplayName'] == ""
-		end
-
-		installed_packages[item['DisplayName']] = {
-			'version' => item['DisplayVersion'],
-			'installdate' => item['InstallDate'],
-			'installlocation' => item['InstallLocation'],
-			'volume' => volume
-		}
-	end
-	installed_packages
+        installed_packages[item['DisplayName']] = {
+          'version' => item['DisplayVersion'],
+          'installdate' => item['InstallDate'],
+          'installlocation' => item['InstallLocation'],
+          'volume' => volume
+        }
+      end
+      installed_packages
+    end
   end
- end
 end
