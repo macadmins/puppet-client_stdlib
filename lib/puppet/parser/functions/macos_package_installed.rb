@@ -9,7 +9,6 @@ module Puppet::Parser::Functions
 Returns true if the specified or newer version of the package is installed.
     EOS
              ) do |args|
-
     if args.size != 2
       raise(Puppet::ParseError, 'macos_package_installed(): ' \
       "Wrong number of arguments given (#{args.size} for 2)")
