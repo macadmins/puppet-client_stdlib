@@ -24,3 +24,47 @@ Facter.add('installed_packages') do
     items
   end
 end
+
+# yes, windows machines exist
+# set to break if powershell cannot be found at the defined path
+Facter.add('installed_packages') do
+  confine osfamily: 'Windows'
+
+  setcode do
+    require 'json'
+
+    powershell = 'C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe'
+    # rubocop:disable LineLength
+    command = 'gp HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json'
+
+    if File.exist?(powershell)
+
+      raw = Facter::Util::Resolution.exec(%(#{powershell} -command "#{command}"))
+
+      # rubocop:enable LineLength
+      installed_packages = {}
+
+      items = JSON.parse(raw)
+
+      items[1..-1].each do |item|
+        # rubocop:disable LineLength
+        volume = if item['InstallLocation'].nil? || item['InstallLocation'] == ''
+                   # rubocop:enable LineLength
+                   ''
+                 else
+                   item['InstallLocation'][0..2]
+                 end
+
+        item['DisplayName'] == '' if item['DisplayName'].nil?
+
+        installed_packages[item['DisplayName']] = {
+          'version' => item['DisplayVersion'],
+          'installdate' => item['InstallDate'],
+          'installlocation' => item['InstallLocation'],
+          'volume' => volume
+        }
+      end
+      installed_packages
+    end
+  end
+end
