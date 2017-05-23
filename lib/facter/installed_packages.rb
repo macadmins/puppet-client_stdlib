@@ -31,7 +31,6 @@ Facter.add('installed_packages') do
   confine osfamily: 'Windows'
 
   setcode do
-
     if Facter.value(:os)['release']['full'].to_i >= 10
 
       require 'json'
