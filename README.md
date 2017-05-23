@@ -1,6 +1,6 @@
-# puppet-mac_stdlib
+# puppet-client_stdlib
 
-This module contains functions that are useful in the administration of macOS.
+This module contains functions that are useful in the administration of client endpoints.
 
 ## Functions
 
