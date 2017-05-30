@@ -2,4 +2,7 @@ Style/ClassAndModuleChildren:
   EnforcedStyle: compact
 
 Metrics/BlockLength:
-  Max: 30
+  Max: 50
+
+Metrics/LineLength:
+  Max: 100
