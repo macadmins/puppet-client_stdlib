@@ -4,9 +4,7 @@ Facter.add('installed_packages') do
   setcode do
     items = {}
 
-    # rubocop:disable LineLength
     output = Facter::Util::Resolution.exec("/usr/sbin/pkgutil --regexp --pkg-info-plist '.*'")
-    # rubocop:enable LineLength
 
     pkginfos = output.split("\n\n\n")
 
@@ -36,30 +34,32 @@ Facter.add('installed_packages') do
       require 'json'
 
       powershell = 'C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe'
-      # rubocop:disable LineLength
+
       command = 'gp HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json'
 
       if File.exist?(powershell)
 
         raw = Facter::Util::Resolution.exec(%(#{powershell} -command "#{command}"))
 
-        # rubocop:enable LineLength
         installed_packages = {}
 
         items = JSON.parse(raw)
 
         items[1..-1].each do |item|
-          # rubocop:disable LineLength
+          next unless item.key?('DisplayName')
           volume = if item['InstallLocation'].nil? || item['InstallLocation'] == ''
-                     # rubocop:enable LineLength
                      ''
                    else
                      item['InstallLocation'][0..2]
                    end
 
-          item['DisplayName'] == '' if item['DisplayName'].nil?
+          display_name = if item['DisplayName'].nil?
+                           ''
+                         else
+                           item['DisplayName'].force_encoding('iso-8859-1')
+                         end
 
-          installed_packages[item['DisplayName']] = {
+          installed_packages[display_name] = {
             'version' => item['DisplayVersion'],
             'installdate' => item['InstallDate'],
             'installlocation' => item['InstallLocation'],
