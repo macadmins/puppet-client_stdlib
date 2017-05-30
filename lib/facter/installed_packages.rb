@@ -56,7 +56,7 @@ Facter.add('installed_packages') do
           display_name = if item['DisplayName'].nil?
                            ''
                          else
-                           item['DisplayName'].encode("UTF-8", "windows-1250")
+                           item['DisplayName'].encode('UTF-8', 'windows-1250')
                          end
 
           installed_packages[display_name] = {
