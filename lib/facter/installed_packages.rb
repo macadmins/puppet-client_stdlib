@@ -4,9 +4,7 @@ Facter.add('installed_packages') do
   setcode do
     items = {}
 
-    # rubocop:disable LineLength
     output = Facter::Util::Resolution.exec("/usr/sbin/pkgutil --regexp --pkg-info-plist '.*'")
-    # rubocop:enable LineLength
 
     pkginfos = output.split("\n\n\n")
 
@@ -31,40 +29,45 @@ Facter.add('installed_packages') do
   confine osfamily: 'Windows'
 
   setcode do
-    require 'json'
+    if Facter.value(:os)['release']['full'].to_i >= 10
 
-    powershell = 'C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe'
-    # rubocop:disable LineLength
-    command = 'gp HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json'
+      require 'json'
 
-    if File.exist?(powershell)
+      powershell = 'C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe'
 
-      raw = Facter::Util::Resolution.exec(%(#{powershell} -command "#{command}"))
+      command = 'gp HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json'
 
-      # rubocop:enable LineLength
-      installed_packages = {}
+      if File.exist?(powershell)
 
-      items = JSON.parse(raw)
+        raw = Facter::Util::Resolution.exec(%(#{powershell} -command "#{command}"))
 
-      items[1..-1].each do |item|
-        # rubocop:disable LineLength
-        volume = if item['InstallLocation'].nil? || item['InstallLocation'] == ''
-                   # rubocop:enable LineLength
-                   ''
-                 else
-                   item['InstallLocation'][0..2]
-                 end
+        installed_packages = {}
 
-        item['DisplayName'] == '' if item['DisplayName'].nil?
+        items = JSON.parse(raw)
 
-        installed_packages[item['DisplayName']] = {
-          'version' => item['DisplayVersion'],
-          'installdate' => item['InstallDate'],
-          'installlocation' => item['InstallLocation'],
-          'volume' => volume
-        }
+        items[1..-1].each do |item|
+          next unless item.key?('DisplayName')
+          volume = if item['InstallLocation'].nil? || item['InstallLocation'] == ''
+                     ''
+                   else
+                     item['InstallLocation'][0..2]
+                   end
+
+          display_name = if item['DisplayName'].nil?
+                           ''
+                         else
+                           item['DisplayName'].encode('UTF-8', 'windows-1250')
+                         end
+
+          installed_packages[display_name] = {
+            'version' => item['DisplayVersion'],
+            'installdate' => item['InstallDate'],
+            'installlocation' => item['InstallLocation'],
+            'volume' => volume
+          }
+        end
+        installed_packages
       end
-      installed_packages
     end
   end
 end
