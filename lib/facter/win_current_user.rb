@@ -22,7 +22,7 @@ Facter.add('win_current_user') do
     if username.nil?
       sid = nil
     else
-      query2 = "select sid from win32_useraccount where name='"+name+"' and domain='"+domain+"'"
+      query2 = "select sid from win32_useraccount where name='" + name + "' and domain='" + domain + "'"
       wmi.ExecQuery(query2).each do |data|
         sid = data.SID
       end
