@@ -3,7 +3,7 @@
 
 define client_stdlib::depnotifycmd (){
   file_line {"DEPNotifyCmd ${name}":
-    path => '/var/tmp/depnotify.log'
+    path => '/var/tmp/depnotify.log',
     line => $name
   }
 }
