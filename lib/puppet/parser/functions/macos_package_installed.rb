@@ -5,9 +5,9 @@ require 'puppet/util/package'
 
 # Returns true if the specified or newer version of the package is installed
 module Puppet::Parser::Functions
-  newfunction(:macos_package_installed, type: :rvalue, doc: <<-EOS
+  newfunction(:macos_package_installed, type: :rvalue, doc: <<-SOMEDOC
   Returns true if the specified or newer version of the package is installed.
-    EOS
+    SOMEDOC
              ) do |args|
     if args.size != 2
       raise(Puppet::ParseError, 'macos_package_installed(): ' \
