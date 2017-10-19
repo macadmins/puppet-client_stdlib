@@ -4,7 +4,7 @@
 define client_stdlib::depnotifycmd (
   String $message = '',
   ){
-    if $message = '' {
+    if $message == '' {
       $output = $title
     } else {
       $output = $message
