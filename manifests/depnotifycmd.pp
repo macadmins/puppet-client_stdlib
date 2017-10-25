@@ -10,9 +10,8 @@ define client_stdlib::depnotifycmd (
       $output = $message
     }
   if $facts['depnotify_running'] == true {
-    file_line {"DEPNotifyCmd ${name}":
-      path => '/var/tmp/depnotify.log',
-      line => $output
+    exec { "DEPNotifyCmd ${name}":
+      command => "/bin/echo \"${output}\" >> /var/tmp/depnotify.log",
     }
   }
 }
