@@ -1,7 +1,9 @@
 Facter.add('installed_packages') do
   confine osfamily: 'Darwin'
-  require 'puppet/util/plist'
   setcode do
+    
+    require 'puppet/util/plist'
+    
     items = {}
 
     output = Facter::Util::Resolution.exec("/usr/sbin/pkgutil --regexp --pkg-info-plist '.*'")
