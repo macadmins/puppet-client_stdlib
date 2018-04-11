@@ -48,7 +48,7 @@ Facter.add('installed_packages') do
 
         commands.each do |command|
           raw = Facter::Util::Resolution.exec(%(#{powershell} -command "#{command}"))
-
+          next if raw.nil? || raw == ''
           items = JSON.parse(raw)
 
           if items.is_a?(Array)
@@ -67,8 +67,8 @@ Facter.add('installed_packages') do
                 'installdate' => item['InstallDate']
               }
             end
-          else
 
+          else
             display_name = if items['DisplayName'].nil?
                              ''
                            else

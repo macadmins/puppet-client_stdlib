@@ -8,4 +8,4 @@ Metrics/LineLength:
   Max: 140
 
 Metrics/BlockNesting:
-  Max: 4
+  Max: 5
