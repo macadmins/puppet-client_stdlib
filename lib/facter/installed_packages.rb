@@ -1,9 +1,9 @@
 Facter.add('installed_packages') do
   confine osfamily: 'Darwin'
   setcode do
-    
+
     require 'puppet/util/plist'
-    
+
     items = {}
 
     output = Facter::Util::Resolution.exec("/usr/sbin/pkgutil --regexp --pkg-info-plist '.*'")
@@ -37,36 +37,53 @@ Facter.add('installed_packages') do
 
       powershell = 'C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe'
 
-      command = 'gp HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json'
+      sid = Facter.value(:win_current_user)['sid']
+
+      commands = [
+        'gp HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json',
+        'gp HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json',
+        'gp HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json'
+        ]
 
       if File.exist?(powershell)
 
-        raw = Facter::Util::Resolution.exec(%(#{powershell} -command "#{command}"))
-
         installed_packages = {}
 
-        items = JSON.parse(raw)
+        commands.each do |command|
 
-        items[1..-1].each do |item|
-          next unless item.key?('DisplayName')
-          volume = if item['InstallLocation'].nil? || item['InstallLocation'] == ''
-                     ''
-                   else
-                     item['InstallLocation'][0..2]
-                   end
+          raw = Facter::Util::Resolution.exec(%(#{powershell} -command "#{command}"))
 
-          display_name = if item['DisplayName'].nil?
-                           ''
-                         else
-                           item['DisplayName'].encode('UTF-8', 'windows-1250')
-                         end
+          items = JSON.parse(raw)
 
-          installed_packages[display_name] = {
-            'version' => item['DisplayVersion'],
-            'installdate' => item['InstallDate'],
-            'installlocation' => item['InstallLocation'],
-            'volume' => volume
-          }
+          if items.kind_of?(Array)
+
+            items.each do |item|
+              next unless item.key?('DisplayName')
+
+              display_name = if item['DisplayName'].nil?
+                               ''
+                             else
+                               item['DisplayName'].encode('UTF-8', 'windows-1250')
+                             end
+
+              installed_packages[display_name] = {
+                'version' => item['DisplayVersion'],
+                'installdate' => item['InstallDate']
+              }
+            end
+          else
+
+            display_name = if items['DisplayName'].nil?
+                             ''
+                           else
+                             items['DisplayName'].encode('UTF-8', 'windows-1250')
+                           end
+
+            installed_packages[display_name] = {
+              'version' => items['DisplayVersion'],
+              'installdate' => items['InstallDate']
+            }
+          end
         end
         installed_packages
       end
