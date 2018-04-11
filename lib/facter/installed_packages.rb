@@ -1,7 +1,6 @@
 Facter.add('installed_packages') do
   confine osfamily: 'Darwin'
   setcode do
-
     require 'puppet/util/plist'
 
     items = {}
@@ -37,25 +36,22 @@ Facter.add('installed_packages') do
 
       powershell = 'C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe'
 
-      sid = Facter.value(:win_current_user)['sid']
-
       commands = [
         'gp HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json',
         'gp HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json',
         'gp HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json'
-        ]
+      ]
 
       if File.exist?(powershell)
 
         installed_packages = {}
 
         commands.each do |command|
-
           raw = Facter::Util::Resolution.exec(%(#{powershell} -command "#{command}"))
 
           items = JSON.parse(raw)
 
-          if items.kind_of?(Array)
+          if items.is_a?(Array)
 
             items.each do |item|
               next unless item.key?('DisplayName')
