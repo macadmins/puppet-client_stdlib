@@ -6,3 +6,6 @@ Metrics/BlockLength:
 
 Metrics/LineLength:
   Max: 140
+
+Metrics/BlockNesting:
+  Max: 5
