@@ -1,6 +1,6 @@
 # ruby hash
 
-require 'puppet/util/plist' if Puppet.features.cfpropertylist?
+require 'cfpropertylist' if Puppet.features.cfpropertylist?
 
 # Accepts a hash as input and returns a plist
 module Puppet::Parser::Functions
