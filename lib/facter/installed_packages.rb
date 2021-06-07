@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Facter.add('installed_packages') do
   confine osfamily: 'Darwin'
   setcode do
@@ -49,6 +51,7 @@ Facter.add('installed_packages') do
         commands.each do |command|
           raw = Facter::Util::Resolution.exec(%(#{powershell} -command "#{command}"))
           next if raw.nil? || raw == ''
+
           items = JSON.parse(raw)
 
           if items.is_a?(Array)

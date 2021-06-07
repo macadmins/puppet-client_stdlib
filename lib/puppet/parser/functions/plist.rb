@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # ruby hash
 
 require 'cfpropertylist' if Puppet.features.cfpropertylist?
@@ -8,10 +10,8 @@ module Puppet::Parser::Functions
   newfunction(:plist, type: :rvalue) do |args|
     hash   = args[0]      || {}
     format = args[1]      || :xml
-    plist_to_save       = CFPropertyList::List.new
-    opts = {:convert_unknown_to_string => true}
-    plist_to_save.value = CFPropertyList.guess(hash, opts)
-    fmt_opts = {:formatted => true}
-    return plist_to_save.to_str(Puppet::Util::Plist.to_format(format), fmt_opts)
+    plist_to_save = CFPropertyList::List.new
+    plist_to_save.value = CFPropertyList.guess(hash, convert_unknown_to_string: true)
+    return plist_to_save.to_str(Puppet::Util::Plist.to_format(format), formatted: true)
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 # macos_package_installed
 #
@@ -7,8 +9,8 @@ require 'puppet/util/package'
 module Puppet::Parser::Functions
   newfunction(:macos_package_installed, type: :rvalue, doc: <<-SOMEDOC
   Returns true if the specified or newer version of the package is installed.
-    SOMEDOC
-             ) do |args|
+  SOMEDOC
+  ) do |args|
     if args.size != 2
       raise(Puppet::ParseError, 'macos_package_installed(): ' \
       "Wrong number of arguments given (#{args.size} for 2)")

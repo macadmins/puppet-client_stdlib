@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # win_current_user.rb
 Facter.add('win_current_user') do
   confine kernel: 'windows'

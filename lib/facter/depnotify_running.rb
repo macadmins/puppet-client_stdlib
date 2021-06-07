@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Facter.add('depnotify_running') do
   confine osfamily: 'Darwin'
   setcode do
