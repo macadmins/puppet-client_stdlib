@@ -19,4 +19,4 @@ jobs:
       - name: puppet-lint
         uses: scottbrenner/puppet-lint-action@master
         with:
-          args: ./
+          args: --no-autoloader_layout-check .
