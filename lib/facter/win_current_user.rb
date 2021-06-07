@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
 # win_current_user.rb
-Facter.add('win_current_user') do
-  confine kernel: 'windows'
+Facter.add("win_current_user") do
+  confine kernel: "windows"
 
   setcode do
-    require 'win32ole'
+    require "win32ole"
     username = nil
     name = nil
     domain = nil
     sid = nil
-    wmi = WIN32OLE.connect('winmgmts://./root/CIMV2')
+    wmi = WIN32OLE.connect("winmgmts://./root/CIMV2")
     ## First find out
-    query1 = 'select Username from win32_computersystem'
+    query1 = "select Username from win32_computersystem"
     wmi.ExecQuery(query1).each do |data|
       if data.Username.nil?
         username = nil
@@ -30,10 +30,10 @@ Facter.add('win_current_user') do
       end
     end
     output = {}
-    output['domain_username'] = username
-    output['domain'] = domain
-    output['sid'] = sid
-    output['username'] = name
+    output["domain_username"] = username
+    output["domain"] = domain
+    output["sid"] = sid
+    output["username"] = name
     output
   end
 end

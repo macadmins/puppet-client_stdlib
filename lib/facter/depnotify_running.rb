@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-Facter.add('depnotify_running') do
-  confine osfamily: 'Darwin'
+Facter.add("depnotify_running") do
+  confine osfamily: "Darwin"
   setcode do
     depnotify_running = false
     _ = Facter::Util::Resolution.exec('/bin/ps axo pid,command | grep "[D]EPNotify.app"')
