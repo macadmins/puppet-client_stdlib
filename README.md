@@ -10,7 +10,7 @@ This function accepts a hash and will convert it into a plist. This requires the
 
 #### Example
 
-``` puppet
+```puppet
 $plist = {
     'SomeKey' => 'Some Value',
     'Another Key' => 'Another Value'
@@ -27,6 +27,10 @@ Returns true if the version specified, or a higher version is installed of the s
 
 #### Example
 
-``` puppet
+```puppet
 macos_package_installed('com.googlecode.munki.core', '1.0.0')
 ```
+
+## Development
+
+The Ruby is formatted with [rufo](https://github.com/ruby-formatter/rufo). The Puppet should pass `puppet-lint`.
