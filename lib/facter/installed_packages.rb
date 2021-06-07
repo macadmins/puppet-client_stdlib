@@ -33,7 +33,6 @@ Facter.add('installed_packages') do
 
   setcode do
     if Facter.value(:os)['release']['full'].to_i >= 10
-
       require 'json'
 
       powershell = 'C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe'
@@ -45,7 +44,6 @@ Facter.add('installed_packages') do
       ]
 
       if File.exist?(powershell)
-
         installed_packages = {}
 
         commands.each do |command|
@@ -55,7 +53,6 @@ Facter.add('installed_packages') do
           items = JSON.parse(raw)
 
           if items.is_a?(Array)
-
             items.each do |item|
               next unless item.key?('DisplayName')
 
@@ -63,20 +60,19 @@ Facter.add('installed_packages') do
                                ''
                              else
                                item['DisplayName'].encode('UTF-8', 'windows-1250')
-                             end
+                end
 
               installed_packages[display_name] = {
                 'version' => item['DisplayVersion'],
                 'installdate' => item['InstallDate']
               }
             end
-
           else
             display_name = if items['DisplayName'].nil?
                              ''
                            else
                              items['DisplayName'].encode('UTF-8', 'windows-1250')
-                           end
+              end
 
             installed_packages[display_name] = {
               'version' => items['DisplayVersion'],

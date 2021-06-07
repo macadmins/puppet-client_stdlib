@@ -16,8 +16,7 @@ module Puppet::Parser::Functions
       "Wrong number of arguments given (#{args.size} for 2)")
     end
 
-    raise(Puppet::ParseError, 'This can only be used on macOS') unless \
-     lookupvar('operatingsystem').casecmp('darwin').zero?
+    raise(Puppet::ParseError, 'This can only be used on macOS') unless lookupvar('operatingsystem').casecmp('darwin').zero?
 
     # Alright, let's see what version is installed (if any)
     installed_packages = lookupvar('installed_packages')
