@@ -9,7 +9,7 @@ module Puppet::Parser::Functions
     hash   = args[0]      || {}
     format = args[1]      || :xml
     plist_to_save       = CFPropertyList::List.new
-    plist_to_save.value = CFPropertyList.guess(hash, :convert_unknown_to_string => true)
-    return plist_to_save.to_str(Puppet::Util::Plist.to_format(format), :formatted => true)
+    plist_to_save.value = CFPropertyList.guess(hash, {:convert_unknown_to_string => true})
+    return plist_to_save.to_str(Puppet::Util::Plist.to_format(format), {:formatted => true})
   end
 end
