@@ -27,6 +27,7 @@ Facter.add("installed_packages") do
 end
 
 # yes, windows machines exist
+# Inspired from the following blog post & example https://tenfoursquid.com/getting-a-list-of-installed-software-in-windows-with-puppet/
 Facter.add("installed_packages") do
   confine :kernel => "windows"
   setcode do
