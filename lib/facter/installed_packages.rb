@@ -27,61 +27,95 @@ Facter.add("installed_packages") do
 end
 
 # yes, windows machines exist
-# set to break if powershell cannot be found at the defined path
+# Inspired from the following blog post & example https://tenfoursquid.com/getting-a-list-of-installed-software-in-windows-with-puppet/
 Facter.add("installed_packages") do
-  confine osfamily: "Windows"
-
+  confine :kernel => "windows"
   setcode do
-    if Facter.value(:os)["release"]["full"].to_i >= 10
-      require "json"
+    require "win32/registry"
 
-      powershell = 'C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe'
+    # Generate empty array to store hashes
+    installed_packages = {}
 
-      commands = [
-        'gp HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json',
-        'gp HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json',
-        'gp HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Convertto-json',
-      ]
+    # Check if reg path exist, return true / false
+    def key_exists?(path, scope)
+      begin
+        Win32::Registry::scope.open(path, ::Win32::Registry::KEY_READ)
+        return true
+      rescue
+        return false
+      end
+    end
 
-      if File.exist?(powershell)
-        installed_packages = {}
+    # Loop through all uninstall keys for 64bit applications.
+    Win32::Registry::HKEY_LOCAL_MACHINE.open('Software\Microsoft\Windows\CurrentVersion\Uninstall') do |reg|
+      reg.each_key do |key|
+        k = reg.open(key)
+        displayname = k["DisplayName"] rescue nil
+        version = k["DisplayVersion"] rescue nil
+        uninstallpath = k["UninstallString"] rescue nil
+        systemcomponent = k["SystemComponent"] rescue nil
+        installdate = k["InstallDate"] rescue nil
 
-        commands.each do |command|
-          raw = Facter::Util::Resolution.exec(%(#{powershell} -command "#{command}"))
-          next if raw.nil? || raw == ""
-
-          items = JSON.parse(raw)
-
-          if items.is_a?(Array)
-            items.each do |item|
-              next unless item.key?("DisplayName")
-
-              display_name = if item["DisplayName"].nil?
-                  ""
-                else
-                  item["DisplayName"].encode("UTF-8", "windows-1250")
-                end
-
-              installed_packages[display_name] = {
-                "version" => item["DisplayVersion"],
-                "installdate" => item["InstallDate"],
-              }
-            end
-          else
-            display_name = if items["DisplayName"].nil?
-                ""
-              else
-                items["DisplayName"].encode("UTF-8", "windows-1250")
-              end
-
-            installed_packages[display_name] = {
-              "version" => items["DisplayVersion"],
-              "installdate" => items["InstallDate"],
+        if (displayname && uninstallpath)
+          unless (systemcomponent == 1)
+            installed_packages[displayname] = {
+              "version" => version,
+              "installdate" => installdate,
             }
           end
         end
-        installed_packages
       end
     end
+
+    # Loop through all uninstall keys for 32bit applications.
+    Win32::Registry::HKEY_LOCAL_MACHINE.open('Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall') do |reg|
+      reg.each_key do |key|
+        k = reg.open(key)
+
+        displayname = k["DisplayName"] rescue nil
+        version = k["DisplayVersion"] rescue nil
+        uninstallpath = k["UninstallString"] rescue nil
+        systemcomponent = k["SystemComponent"] rescue nil
+        installdate = k["InstallDate"] rescue nil
+
+        if (displayname && uninstallpath)
+          unless (systemcomponent == 1)
+            installed_packages[displayname] = {
+              "version" => version,
+              "installdate" => installdate,
+            }
+          end
+        end
+      end
+    end
+
+    # Loop through all uninstall keys for user applications.
+    Win32::Registry::HKEY_USERS.open('\\') do |reg|
+      reg.each_key do |sid|
+        unless (sid.include?("_Classes"))
+          path = "#{sid}\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+          scope = "HKEY_USERS"
+          if key_exists?(path, scope)
+            Win32::Registry::scope.open(path) do |userreg|
+              userreg.each_key do |key|
+                k = userreg.open(key)
+                displayname = k["DisplayName"] rescue nil
+                version = k["DisplayVersion"] rescue nil
+                uninstallpath = k["UninstallString"] rescue nil
+                installdate = k["InstallDate"] rescue nil
+
+                if (displayname && uninstallpath)
+                  installed_packages[displayname] = {
+                    "version" => version,
+                    "installdate" => installdate,
+                  }
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+    installed_packages
   end
 end
